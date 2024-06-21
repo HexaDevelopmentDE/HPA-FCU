@@ -30,7 +30,7 @@ int currentFireMode = 0;
 void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(LED_BUILTIN, HIGH);
 
   pinMode(BUTTON_FIRESELECTOR, INPUT);
   prev_selector_state = 0;
@@ -55,11 +55,19 @@ void switchFireMode() {
   int oldFireMode = currentFireMode;
 
   if (selector_state == LOW && prev_selector_state == HIGH) {
-    if(currentFireMode <= 2) {
-      currentFireMode = currentFireMode + 1;
-    }
-    if(currentFireMode == 3) {
-      currentFireMode = 0;
+    switch(currentFireMode) {
+      case 0:
+        currentFireMode = currentFireMode + 1;
+        flashcode("firemode", 2);
+        break;
+      case 1:
+        currentFireMode = currentFireMode + 1;
+        flashcode("firemode", 3);
+        break;
+      case 2:
+        currentFireMode = 0;
+        flashcode("firemode", 1);
+        break;
     }
     Serial.println("switch fire mode from "  + String(firemodes[selectedFireModeConfig][oldFireMode]) + " to  " + String(firemodes[selectedFireModeConfig][(currentFireMode)]));
   }
@@ -79,10 +87,7 @@ void cycle() {
 
   if(firemodes[selectedFireModeConfig][currentFireMode] == "semi") {
     if (trigger_state == LOW && prev_trigger_state == HIGH) {
-      Serial.println("triggered");
-      digitalWrite(LED_BUILTIN, HIGH);
-      delay(10);
-      digitalWrite(LED_BUILTIN, LOW);
+      flashcode("shot", 1);
     }
   }
 
@@ -90,10 +95,7 @@ void cycle() {
     if (trigger_state == LOW && prev_trigger_state == HIGH) {
       int end = 0;
       while(end == 0) {
-        Serial.println("triggered");
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(10);
-        digitalWrite(LED_BUILTIN, LOW);
+        flashcode("shot", 1);
         trigger_state = digitalRead(BUTTON_TRIGGER);
         if(trigger_state == HIGH) {
           prev_trigger_state = digitalRead(BUTTON_TRIGGER);
@@ -116,4 +118,21 @@ void enterDebugMode() {}
 void leaveDebugMode() {}
 
 //flashcodes for diagnosis
-void flashcode() {}
+void flashcode(String code, int amount) {
+  for (int i=0; i < amount; i++){
+    if(code == "firemode") {
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(50);
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(50);
+    }
+
+    if(code == "shot") {
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(10);
+      digitalWrite(LED_BUILTIN, HIGH);
+      Serial.println("triggered");
+    }
+
+  }
+}
