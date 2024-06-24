@@ -13,13 +13,14 @@
 
 #define BUTTON_TRIGGER D3
 #define BUTTON_FIRESELECTOR D8
+#define BUTTON_TRANSISTOR D6
 
 int prev_trigger_state;
 int prev_selector_state;
 int trigger_state;
 int selector_state;
 
-float valve_open_time = 0.1;
+float valve_open_time = 38;
 float rate_of_fire = 30;
 bool binary = false;
 int selectedFireModeConfig = 0;
@@ -36,6 +37,9 @@ void setup() {
   prev_selector_state = 0;
   pinMode(BUTTON_TRIGGER, INPUT);
   prev_trigger_state = 0;
+
+  pinMode(BUTTON_TRANSISTOR, OUTPUT);
+  digitalWrite(BUTTON_TRANSISTOR, LOW);
 
   //print out loaded konfiguration
   Serial.println("Valve Opening Time: " + String(valve_open_time));
@@ -88,6 +92,10 @@ void cycle() {
   if(firemodes[selectedFireModeConfig][currentFireMode] == "semi") {
     if (trigger_state == LOW && prev_trigger_state == HIGH) {
       flashcode("shot", 1);
+
+      digitalWrite(BUTTON_TRANSISTOR, HIGH);
+      delay(valve_open_time);
+      digitalWrite(BUTTON_TRANSISTOR, LOW);
     }
   }
 
@@ -96,6 +104,11 @@ void cycle() {
       int end = 0;
       while(end == 0) {
         flashcode("shot", 1);
+
+        digitalWrite(BUTTON_TRANSISTOR, HIGH);
+        delay(valve_open_time);
+        digitalWrite(BUTTON_TRANSISTOR, LOW);
+
         trigger_state = digitalRead(BUTTON_TRIGGER);
         if(trigger_state == HIGH) {
           prev_trigger_state = digitalRead(BUTTON_TRIGGER);
