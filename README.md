@@ -21,5 +21,5 @@ This project represents a custom FCU for HPA engines with one valve.
 
 ## Demonstration
 
-https://github.com/HexaDevelopmentDE/HPA-FCU/assets/75783490/1e2329fe-2ca7-49f4-8491-e4fffd8522ae/video.mp4
+https://github.com/HexaDevelopmentDE/HPA-FCU/assets/75783490/3a53af5f-56ab-4e37-8391-4cdb129f6ec5
 
