@@ -7,6 +7,7 @@ This project represents a custom FCU for HPA engines with one valve.
 
 - 1x [ESP8266 / D1 Mini](https://www.az-delivery.de/collections/esp8266/products/d1-mini)
 - 2x Buttons
+- D882 transistor
 - some cable
 
 ## Required devices
