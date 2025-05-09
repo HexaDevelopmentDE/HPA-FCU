@@ -11,8 +11,8 @@
  * - webinterface for configuration
  **/
 
-#define BUTTON_TRIGGER D3
-#define BUTTON_FIRESELECTOR D8
+#define BUTTON_TRIGGER D8
+#define BUTTON_FIRESELECTOR D1
 #define BUTTON_TRANSISTOR D6
 
 int prev_trigger_state;
@@ -46,37 +46,15 @@ void setup() {
   Serial.println("Rate of Fire: " + String(rate_of_fire));
   Serial.println("Binary Trigger enabled: " + String(binary));
   Serial.println("Selected Firemode Konfiguration: " + String(selectedFireModeConfig) + " (" + String(firemodes[selectedFireModeConfig][0]) + ", " + String(firemodes[selectedFireModeConfig][1]) + ", " + String(firemodes[selectedFireModeConfig][2]) + ")");
+
+  //manually set fire mode
+  firemodes[selectedFireModeConfig][currentFireMode] = "semi";
 }
 
 void loop() {
-  switchFireMode();
-  delay(100);
+  //switchFireMode();
+  delay(10);
   cycle();
-}
-
-void switchFireMode() {
-  selector_state = digitalRead(BUTTON_FIRESELECTOR);
-  int oldFireMode = currentFireMode;
-
-  if (selector_state == LOW && prev_selector_state == HIGH) {
-    switch(currentFireMode) {
-      case 0:
-        currentFireMode = currentFireMode + 1;
-        flashcode("firemode", 2);
-        break;
-      case 1:
-        currentFireMode = currentFireMode + 1;
-        flashcode("firemode", 3);
-        break;
-      case 2:
-        currentFireMode = 0;
-        flashcode("firemode", 1);
-        break;
-    }
-    Serial.println("switch fire mode from "  + String(firemodes[selectedFireModeConfig][oldFireMode]) + " to  " + String(firemodes[selectedFireModeConfig][(currentFireMode)]));
-  }
-
-  prev_selector_state = digitalRead(BUTTON_FIRESELECTOR);
 }
 
 //triggers a shot
@@ -90,7 +68,9 @@ void cycle() {
   }
 
   if(firemodes[selectedFireModeConfig][currentFireMode] == "semi") {
-    if (trigger_state == LOW && prev_trigger_state == HIGH) {
+    //Serial.println(String(trigger_state) + " == 1 && " + String(prev_trigger_state) + " == 0");
+
+    if (trigger_state == HIGH && prev_trigger_state == LOW) {
       flashcode("shot", 1);
 
       digitalWrite(BUTTON_TRANSISTOR, HIGH);
@@ -119,7 +99,7 @@ void cycle() {
     }
   }
 
-  prev_trigger_state = digitalRead(BUTTON_TRIGGER);  
+  prev_trigger_state = trigger_state;  
 }
 
 void startWebServer() {}
@@ -148,4 +128,29 @@ void flashcode(String code, int amount) {
     }
 
   }
+}
+
+void switchFireMode() {
+  selector_state = digitalRead(BUTTON_FIRESELECTOR);
+  int oldFireMode = currentFireMode;
+
+  if (selector_state == LOW && prev_selector_state == HIGH) {
+    switch(currentFireMode) {
+      case 0:
+        currentFireMode = currentFireMode + 1;
+        flashcode("firemode", 2);
+        break;
+      case 1:
+        currentFireMode = currentFireMode + 1;
+        flashcode("firemode", 3);
+        break;
+      case 2:
+        currentFireMode = 0;
+        flashcode("firemode", 1);
+        break;
+    }
+    Serial.println("switch fire mode from "  + String(firemodes[selectedFireModeConfig][oldFireMode]) + " to  " + String(firemodes[selectedFireModeConfig][(currentFireMode)]));
+  }
+
+  prev_selector_state = digitalRead(BUTTON_FIRESELECTOR);
 }
