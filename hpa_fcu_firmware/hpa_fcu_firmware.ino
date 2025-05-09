@@ -9,6 +9,7 @@
  * - adjustable fire rate
  * - binary trigger
  * - webinterface for configuration
+ * - fire selector
  **/
 
 #define BUTTON_TRIGGER D8
@@ -20,8 +21,8 @@ int prev_selector_state;
 int trigger_state;
 int selector_state;
 
-float valve_open_time = 38;
-float rate_of_fire = 30;
+float valve_open_time = 60;
+float rate_of_fire = 40;
 bool binary = false;
 int selectedFireModeConfig = 0;
 const char* firemodes[][3] = {{"safe", "semi", "full"},{"safe", "semi", "safe"},{"safe", "semi", "semi"}};
@@ -41,14 +42,18 @@ void setup() {
   pinMode(BUTTON_TRANSISTOR, OUTPUT);
   digitalWrite(BUTTON_TRANSISTOR, LOW);
 
+  //manually set fire mode
+  firemodes[selectedFireModeConfig][currentFireMode] = "semi";
+
   //print out loaded konfiguration
   Serial.println("Valve Opening Time: " + String(valve_open_time));
   Serial.println("Rate of Fire: " + String(rate_of_fire));
   Serial.println("Binary Trigger enabled: " + String(binary));
   Serial.println("Selected Firemode Konfiguration: " + String(selectedFireModeConfig) + " (" + String(firemodes[selectedFireModeConfig][0]) + ", " + String(firemodes[selectedFireModeConfig][1]) + ", " + String(firemodes[selectedFireModeConfig][2]) + ")");
+  Serial.println("Current Fire Mode: " + String(firemodes[selectedFireModeConfig][currentFireMode]));
 
-  //manually set fire mode
-  firemodes[selectedFireModeConfig][currentFireMode] = "semi";
+  //Ready Up Signal
+  flashcode("ready", 1);
 }
 
 void loop() {
@@ -80,9 +85,8 @@ void cycle() {
   }
 
   if(firemodes[selectedFireModeConfig][currentFireMode] == "full") {
-    if (trigger_state == LOW && prev_trigger_state == HIGH) {
-      int end = 0;
-      while(end == 0) {
+    if (trigger_state == HIGH && prev_trigger_state == LOW) {
+      while(trigger_state == HIGH) {
         flashcode("shot", 1);
 
         digitalWrite(BUTTON_TRANSISTOR, HIGH);
@@ -90,10 +94,7 @@ void cycle() {
         digitalWrite(BUTTON_TRANSISTOR, LOW);
 
         trigger_state = digitalRead(BUTTON_TRIGGER);
-        if(trigger_state == HIGH) {
-          prev_trigger_state = digitalRead(BUTTON_TRIGGER);
-          break;
-        }
+
         delay((1000/rate_of_fire));
       }
     }
@@ -127,6 +128,16 @@ void flashcode(String code, int amount) {
       Serial.println("triggered");
     }
 
+    if(code == "ready") {
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(10);
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(2);
+      digitalWrite(LED_BUILTIN, LOW);
+      delay(10);
+      digitalWrite(LED_BUILTIN, HIGH);
+      delay(2);
+    }
   }
 }
 
